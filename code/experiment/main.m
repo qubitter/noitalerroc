@@ -1,7 +1,6 @@
 clear all;
 close all;
 KbName('UnifyKeyNames');
-ListenChar(-1);
 
 
 exp = input('Please enter the experiment code. ', 's');
