@@ -54,6 +54,8 @@ if (ensemble); expString = 'sets of 6 images, each of which will be followed by 
 % Race and Gender
 
 if (ensemble); firstRaceGender = personcodes(str2double(exp(5))+1, :); secondRaceGender = personcodes(str2double(exp(6))+1, :); end
+firstPeople = [];
+SecondPeople = [];
 
 % Trial time
 if (ensemble); trialTime = str2double(exp(4)).*10; end
@@ -73,23 +75,36 @@ KbWait();
 %% Create stimulus list
 
 stimuliorder = randperm(600);
-stimuli = [];
+stimuli = zeros([1200 1]);
+firstensemble = [];
+secondensemble = [];
 
-
-if (single)
-    stimuli = zeros([1200 1]);
-    for stimNum = stimuliorder
+% Load noisy stimuli
+for stimNum = stimuliorder
        tmp = [];
-       if (floor(a/100) ~= 0); tmp = num2str(stimNum); elseif (floor(a/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
-       stimuli((2.*stimNum)-1) = imread(['../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']);
-       stimuli(2.*stimNum) = imread(['../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']);
-    end
-elseif (~bias)
-    
-else
-    
+       if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
+       stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
+       stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
 end
 
+% Load ensemble stimuli
+if (~single)
+    for stimNum = 1:258
+        try
+            tmp = [];
+            if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
+            for file = dir(['../../stimuli/cfd/img/' firstRaceGender '-' tmp '/CFD-' firstRaceGender '-' tmp '-*.jpg'])
+                firstensemble = [firstensemble Screen('MakeTexture', window, imread(file.name))];
+            end
+            for file = dir(['../../stimuli/cfd/img/' secondRaceGender '-' tmp '/CFD-' secondRaceGender '-' tmp '-*.jpg'])
+                secondensemble = [secondensemble Screen('MakeTexture', window, imread(file.name))];
+            end
+        catch
+            
+        end
+        
+    end
+end
 
 %% Start experiment
 KbQueueCreate(1);
