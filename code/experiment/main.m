@@ -80,15 +80,17 @@ firstPeople = [];
 SecondPeople = [];
 
 % Trial time
-if (ensemble); trialTime = str2double(exp(4)).*10; end
+if (ensemble); trialTime = str2double(exp(3)).*10; end
 
 % Number of trials
-numTrials = (hex2dec(exp(3))+1).*10;
+numTrials = (hex2dec(exp(2))+1).*10;
 
 % Trait
 trait = traits{hex2dec(exp(4))+1};
 
 %% Create stimulus list
+
+data = cell([numTrials 1]);
 
 stimuliorder = randperm(600);
 stimuli = zeros([1200 1]);
@@ -104,7 +106,7 @@ for stimNum = stimuliorder
        stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
        stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
        stimloader = stimloader + 1;
-       DrawFormattedText(window, ['Loading Stimuli... ' num2str(stimloader/12.0) '%']);
+       DrawFormattedText(window, ['Loading Stimuli... ' num2str(stimloader/6.0) '%']);
        Screen('Flip', window);
 end
 
@@ -147,14 +149,36 @@ for trail = 1:numTrials
     if firstPress(KbName('ESCAPE')); break; end
     if (single)
         imagesToShowThisTrial = stimuli((2*stimuliorder(trail))-1:(2*stimuliorder(trail)));
+        listToCheckNoiseOrAntiNoise = imagesToShowThisTrial;
+        noiseOrAntiNoise = [0 0]; % true if noise, false if antinoise
+        
         imagesToShowThisTrial = imagesToShowThisTrial(randperm(2));
+        if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; else; noiseOrAntiNoise(1) = false; end
+        noiseOrAntiNoise(2) = ~noiseOrAntiNoise(1);
+            
+        
         
         %Screen('DrawLines', window, allCoords, lineWidthPix, white, [xCenter yCenter]); % Draw the fixation cross
-        Screen('DrawTextures', window, imagesToShowThisTrial);
+        Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
+        Screen('DrawTexture', window, imagesToShowThisTrial(2), [], [xCenter+128, yCenter-128 xCenter+384 yCenter+128]);
         
-        DrawFormattedText(window, ['Click on the image that you think is more ' trait], (rect(3)/2)-150, (rect(4)/2)+250);
+        DrawFormattedText(window, ['Click on the image that you think is more ' trait], xCenter-150, yCenter+250);
         
         Screen('Flip', window);
+        
+        [x,y,clicks] = GetMouse(window);
+        while true
+            if any(clicks) && (((x > xCenter-640 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 640)) && (y > yCenter - 256 && y < yCenter + 256))
+                break
+            end
+            [x,y,clicks] = GetMouse(window);
+        end
+        data{trail} = [[x y] noiseOrAntiNoise];
+        
+        DrawFormattedText(window, 'Press any key to continue');
+        Screen('Flip', window);
+        
+        KbWait();
         
     elseif ~bias
         
@@ -162,4 +186,4 @@ for trail = 1:numTrials
         
     end
 end    
-Screen('Close', window);
+Screen('Close');
