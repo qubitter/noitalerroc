@@ -51,12 +51,26 @@ hand = input('Please enter your handedness - L for left-handed, R for right-hand
 Screen('Preference', 'SkipSyncTests', 1);
 
 [window, rect] = Screen('OpenWindow', 0, []);
+[xCenter, yCenter] = RectCenter(rect); % Get the center of the window
+
+window_w = rect(3); % defining size of screen
+window_h = rect(4);
+
+xStart = xCenter/2;
+xEnd = xCenter * 1.5;
+yStart = yCenter/2;
+yEnd = yCenter * 1.5;
+nRows = 2;
+nCols = 3;
+xvector = linspace(xStart, xEnd, nRows);
+yvector = linspace(yStart, yEnd, nCols);
+[x,y] = meshgrid(xvector, yvector);
+w_img = 2444;
+h_img = 1718;
+xy_rect = [x(:)'-w_img/2; y(:)'-h_img/2; x(:)'+w_img/2; y(:)'+ h_img/2];
 
 Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 Screen('TextFont', window, 'Arial');
-
-% Get the centre coordinate of the window
-[xCenter, yCenter] = RectCenter(rect);
 
 %% Control Logic
 
@@ -69,7 +83,7 @@ traits = {'attractive', 'punctual', 'afraid', 'angry', 'disgusted', 'dominant', 
 if (str2double(exp(1)) == 0); single = true; else; single = false; end
 ensemble = ~single;
 
-if (ensemble); if (str2double(exp(1)) == 1); bias = false; elseif (str2double(exp(1)) == 2); bias = true; else; bias = false; end; end
+if (ensemble); if (str2double(exp(1)) == 1); bias = false; elseif (str2double(exp(1)) == 2); bias = true; else; bias = false; end; else; bias = false; end
 
 if (ensemble); expString = 'sets of 6 images, each of which will be followed by a pair of'; else; expString = 'pairs of'; end
 
@@ -80,7 +94,7 @@ firstPeople = [];
 SecondPeople = [];
 
 % Trial time
-if (ensemble); trialTime = str2double(exp(3)).*10; end
+if (ensemble); trialTime = (str2double(exp(3)).*10)/1000; end
 
 % Number of trials
 numTrials = (hex2dec(exp(2))).*10;
@@ -112,26 +126,23 @@ end
 
 % Load ensemble stimuli
 if (~single)
-    for stimNum = 1:258
-        try
-            tmp = [];
-            if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
-            for file = dir(['../../stimuli/cfd/img/' firstRaceGender '-' tmp '/CFD-' firstRaceGender '-' tmp '-*.jpg'])
-                firstensemble = [firstensemble Screen('MakeTexture', window, imread(file.name))];
-            end
-            for file = dir(['../../stimuli/cfd/img/' secondRaceGender '-' tmp '/CFD-' secondRaceGender '-' tmp '-*.jpg'])
-                secondensemble = [secondensemble Screen('MakeTexture', window, imread(file.name))];
-            end
-        catch
-            
-        end
-        
+    firstdir = dir(['../../stimuli/cfd/img/' firstRaceGender '-*/*.jpg']);
+    secondir = dir(['../../stimuli/cfd/img/' secondRaceGender '-*/*.jpg']);
+    for fileNum = 1:length(firstdir)
+        firstensemble = [firstensemble Screen('MakeTexture', window, imread([firstdir(fileNum).folder '/' firstdir(fileNum).name]))];
+        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(100*(fileNum/(length(firstdir)+length(secondir)))) '%']);
+        Screen('Flip', window);
+    end
+    for fileNum = 1:length(secondir)
+        secondensemble = [secondensemble Screen('MakeTexture', window, imread([secondir(fileNum).folder '/' secondir(fileNum).name]))];
+        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(100*((fileNum+length(firstdir))/(length(firstdir)+length(secondir)))) '%']);
+        Screen('Flip', window);
     end
 end
 
 % Shuffle ensemble stimuli
-firstensemble = firstensemble(randperm(length(firstensemble)));
-secondensemble = secondensemble(randperm(length(secondensemble)));
+%firstensemble = firstensemble(randperm(length(firstensemble)));
+%secondensemble = secondensemble(randperm(length(secondensemble)));
 
 %% Introduction
 
@@ -147,43 +158,67 @@ KbQueueStart(kbPointer);
 for trail = 1:numTrials
     [pressed, firstPress] = KbQueueCheck(kbPointer);
     if firstPress(KbName('ESCAPE')); break; end
-    if (single)
-        imagesToShowThisTrial = stimuli((2*stimuliorder(trail))-1:(2*stimuliorder(trail)));
-        listToCheckNoiseOrAntiNoise = imagesToShowThisTrial;
-        noiseOrAntiNoise = [0 0]; % true if noise, false if antinoise
         
-        imagesToShowThisTrial = imagesToShowThisTrial(randperm(2));
-        if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; else; noiseOrAntiNoise(1) = false; end
-        noiseOrAntiNoise(2) = ~noiseOrAntiNoise(1);
-            
+    if ~bias
+        Shuffle(firstensemble);
+        Shuffle(secondensemble);
         
+        textlist = zeros([6 1]);
+        textlist = [firstensemble(1:3) secondensemble(1:3)];
         
-        %Screen('DrawLines', window, allCoords, lineWidthPix, white, [xCenter yCenter]); % Draw the fixation cross
-        Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
-        Screen('DrawTexture', window, imagesToShowThisTrial(2), [], [xCenter+128, yCenter-128 xCenter+384 yCenter+128]);
-        
-        DrawFormattedText(window, ['Click on the image that you think is more ' trait], xCenter-150, yCenter+250);
-        
+        Screen('DrawTextures', window, textlist, [], xy_rect);
         Screen('Flip', window);
         
-        [x,y,clicks] = GetMouse(window);
-        while true
-            if any(clicks) && (((x > xCenter-640 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 640)) && (y > yCenter - 256 && y < yCenter + 256))
-                break
-            end
-            [x,y,clicks] = GetMouse(window);
-        end
-        data{trail} = [[x y] noiseOrAntiNoise];
-        
-        DrawFormattedText(window, 'Press any key to continue');
+        WaitSecs(trialTime);
         Screen('Flip', window);
-        
-        KbWait();
-        
-    elseif ~bias
-        
     else
+        Shuffle(firstensemble)
+        Shuffle(secondensemble)
         
+        textlist = zeros([6 1]);
+        textlist = [firstensemble(1:5) secondensemble(1)];
+        Shuffle(textlist)
+        
+        Screen('DrawTextures', window, textlist, [], xy_rect);
+        Screen('Flip', window);
+        
+        WaitSecs(trialTime);  
+        Screen('Flip', window);
     end
+    
+    % Show noisy images
+    
+    imagesToShowThisTrial = stimuli((2*stimuliorder(trail))-1:(2*stimuliorder(trail)));
+    listToCheckNoiseOrAntiNoise = imagesToShowThisTrial;
+    noiseOrAntiNoise = [0 0]; % true if noise, false if antinoise
+
+    imagesToShowThisTrial = imagesToShowThisTrial(randperm(2));
+    if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; else; noiseOrAntiNoise(1) = false; end
+    noiseOrAntiNoise(2) = ~noiseOrAntiNoise(1);
+
+
+
+    %Screen('DrawLines', window, allCoords, lineWidthPix, white, [xCenter yCenter]); % Draw the fixation cross
+    Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
+    Screen('DrawTexture', window, imagesToShowThisTrial(2), [], [xCenter+128, yCenter-128 xCenter+384 yCenter+128]);
+
+    DrawFormattedText(window, ['Click on the image that you think is more ' trait], xCenter-150, yCenter+250);
+
+    Screen('Flip', window);
+
+    [x,y,clicks] = GetMouse(window);
+    while true
+        if any(clicks) && (((x > xCenter-640 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 640)) && (y > yCenter - 256 && y < yCenter + 256))
+            break
+        end
+        [x,y,clicks] = GetMouse(window);
+    end
+    data{trail} = [[x y] noiseOrAntiNoise];
+
+    DrawFormattedText(window, 'Press any key to continue');
+    Screen('Flip', window);
+
+    KbWait();
+        
 end    
 Screen('Close');
