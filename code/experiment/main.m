@@ -63,7 +63,7 @@ Screen('TextFont', window, 'Arial');
 [single, ensemble, bias, firstRaceGender, secondRaceGender, trialTime, numTrials, trait, expString] = deal(NaN);
 
 personcodes = ['AM'; 'BM'; 'LM'; 'WM'; 'AF'; 'BF'; 'LF'; 'WF'];
-traits = {'Attractive', 'Punctual', 'Afraid', 'Angry', 'Disgusted', 'Dominant', 'Feminine', 'Happy', 'Masculine', 'Sad', 'Surprised', 'Threatening', 'Trustworthy', 'Unusual', 'Babyfaced', 'Educated'};
+traits = {'attractive', 'punctual', 'afraid', 'angry', 'disgusted', 'dominant', 'feminine', 'happy', 'masculine', 'sad', 'surprised', 'threatening', 'trustworthy', 'unusual', 'babyfaced', 'educated'};
 
 % Single or Ensemble
 if (str2double(exp(1)) == 0); single = true; else; single = false; end
@@ -83,7 +83,7 @@ SecondPeople = [];
 if (ensemble); trialTime = str2double(exp(3)).*10; end
 
 % Number of trials
-numTrials = (hex2dec(exp(2))+1).*10;
+numTrials = (hex2dec(exp(2))).*10;
 
 % Trait
 trait = traits{hex2dec(exp(4))+1};
