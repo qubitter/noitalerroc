@@ -1,7 +1,23 @@
 clear all;
 close all;
 KbName('UnifyKeyNames');
+rng('Shuffle')
 
+[keyboardIndices, productNames, allInfos] = GetKeyboardIndices();
+kbPointer = keyboardIndices(end);
+
+
+% Set the size of the arms of our fixation cross
+fixCrossDimPix = 40;
+
+% Set the coordinates (these are all relative to zero we will let 
+% the drawing routine center the cross for us)
+xCoords = [-fixCrossDimPix fixCrossDimPix 0 0];
+yCoords = [0 0 -fixCrossDimPix fixCrossDimPix];
+allCoords = [xCoords; yCoords];
+
+% Set the line width for our fixation cross
+lineWidthPix = 4;
 
 exp = input('Please enter the experiment code. ', 's');
 
@@ -36,6 +52,12 @@ Screen('Preference', 'SkipSyncTests', 1);
 
 [window, rect] = Screen('OpenWindow', 0, []);
 
+Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+Screen('TextFont', window, 'Arial');
+
+% Get the centre coordinate of the window
+[xCenter, yCenter] = RectCenter(rect);
+
 %% Control Logic
 
 [single, ensemble, bias, firstRaceGender, secondRaceGender, trialTime, numTrials, trait, expString] = deal(NaN);
@@ -66,12 +88,6 @@ numTrials = (hex2dec(exp(3))+1).*10;
 % Trait
 trait = traits{hex2dec(exp(4))+1};
 
-%% Introduction
-
-DrawFormattedText(window, ['Welcome to the experiment. \n \n You will be shown a series of ' expString ' images. \n \n You will be asked to choose the image that most corresponds with a certain trait. \n \n A break will be taken after every 50 trials, or you can cancel the experiment at any time by pressing Escape. \n \n Press any key to continue. '], 'center', 'center', 0, 50);
-Screen('Flip', window);
-KbWait();
-
 %% Create stimulus list
 
 stimuliorder = randperm(600);
@@ -79,12 +95,17 @@ stimuli = zeros([1200 1]);
 firstensemble = [];
 secondensemble = [];
 
+stimloader = 0;
+
 % Load noisy stimuli
 for stimNum = stimuliorder
        tmp = [];
        if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
        stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
        stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
+       stimloader = stimloader + 1;
+       DrawFormattedText(window, ['Loading Stimuli... ' num2str(stimloader/12.0) '%']);
+       Screen('Flip', window);
 end
 
 % Load ensemble stimuli
@@ -106,16 +127,34 @@ if (~single)
     end
 end
 
+% Shuffle ensemble stimuli
+firstensemble = firstensemble(randperm(length(firstensemble)));
+secondensemble = secondensemble(randperm(length(secondensemble)));
+
+%% Introduction
+
+DrawFormattedText(window, ['Welcome to the experiment. \n \n You will be shown a series of ' expString ' images. \n \n You will be asked to choose the image that most corresponds with a certain trait. \n \n A break will be taken after every 50 trials, or you can cancel the experiment at any time by pressing Escape. \n \n Press any key to continue. '], 'center', 'center', 0, 50);
+Screen('Flip', window);
+KbWait();
+
 %% Start experiment
-KbQueueCreate(1);
+KbQueueCreate(kbPointer);
 while KbCheck; end
-KbQueueStart(1);
+KbQueueStart(kbPointer);
 
 for trail = 1:numTrials
-    [pressed, firstPress] = KbQueueCheck(1);
+    [pressed, firstPress] = KbQueueCheck(kbPointer);
     if firstPress(KbName('ESCAPE')); break; end
     if (single)
+        imagesToShowThisTrial = stimuli((2*stimuliorder(trail))-1:(2*stimuliorder(trail)));
+        imagesToShowThisTrial = imagesToShowThisTrial(randperm(2));
         
+        %Screen('DrawLines', window, allCoords, lineWidthPix, white, [xCenter yCenter]); % Draw the fixation cross
+        Screen('DrawTextures', window, imagesToShowThisTrial);
+        
+        DrawFormattedText(window, ['Click on the image that you think is more ' trait], (rect(3)/2)-150, (rect(4)/2)+250);
+        
+        Screen('Flip', window);
         
     elseif ~bias
         
