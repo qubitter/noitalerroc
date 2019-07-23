@@ -1,3 +1,4 @@
+%% Begin
 clear all;
 close all;
 KbName('UnifyKeyNames');
@@ -6,19 +7,7 @@ rng('Shuffle')
 [keyboardIndices, productNames, allInfos] = GetKeyboardIndices();
 kbPointer = keyboardIndices(end);
 
-
-% Set the size of the arms of our fixation cross
-fixCrossDimPix = 40;
-
-% Set the coordinates (these are all relative to zero we will let 
-% the drawing routine center the cross for us)
-xCoords = [-fixCrossDimPix fixCrossDimPix 0 0];
-yCoords = [0 0 -fixCrossDimPix fixCrossDimPix];
-allCoords = [xCoords; yCoords];
-
-% Set the line width for our fixation cross
-lineWidthPix = 4;
-
+%% Start the experiment!
 exp = input('Please enter the experiment code. ', 's');
 
 %% Code is processed as follows:
@@ -60,13 +49,19 @@ xStart = xCenter/2;
 xEnd = xCenter * 1.5;
 yStart = yCenter/2;
 yEnd = yCenter * 1.5;
-nRows = 2;
-nCols = 3;
+
+nRows = 3;
+nCols = 2;
 xvector = linspace(xStart, xEnd, nRows);
 yvector = linspace(yStart, yEnd, nCols);
+
 [x,y] = meshgrid(xvector, yvector);
-w_img = 2444;
-h_img = 1718;
+
+img_ratio = 0.2095; % 512/2444
+
+w_img = 2444*img_ratio;
+h_img = 1718*img_ratio;
+
 xy_rect = [x(:)'-w_img/2; y(:)'-h_img/2; x(:)'+w_img/2; y(:)'+ h_img/2];
 
 Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
@@ -106,7 +101,7 @@ trait = traits{hex2dec(exp(4))+1};
 
 data = cell([numTrials 1]);
 
-stimuliorder = randperm(600);
+stimuliorder = randperm(300);
 stimuli = zeros([1200 1]);
 firstensemble = [];
 secondensemble = [];
@@ -120,7 +115,7 @@ for stimNum = stimuliorder
        stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
        stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
        stimloader = stimloader + 1;
-       DrawFormattedText(window, ['Loading Stimuli... ' num2str(stimloader/6.0) '%']);
+       DrawFormattedText(window, ['Loading Stimuli... ' num2str(round((stimloader/6.0))) '%'], 'center', 'center');
        Screen('Flip', window);
 end
 
@@ -130,12 +125,12 @@ if (~single)
     secondir = dir(['../../stimuli/cfd/img/' secondRaceGender '-*/*.jpg']);
     for fileNum = 1:length(firstdir)
         firstensemble = [firstensemble Screen('MakeTexture', window, imread([firstdir(fileNum).folder '/' firstdir(fileNum).name]))];
-        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(100*(fileNum/(length(firstdir)+length(secondir)))) '%']);
+        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(round(100*(fileNum/(length(firstdir)+length(secondir))))) '%'], 'center', 'center');
         Screen('Flip', window);
     end
     for fileNum = 1:length(secondir)
         secondensemble = [secondensemble Screen('MakeTexture', window, imread([secondir(fileNum).folder '/' secondir(fileNum).name]))];
-        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(100*((fileNum+length(firstdir))/(length(firstdir)+length(secondir)))) '%']);
+        DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(round(100*((fileNum+length(firstdir))/(length(firstdir)+length(secondir))))) '%'], 'center', 'center');
         Screen('Flip', window);
     end
 end
@@ -159,7 +154,7 @@ for trail = 1:numTrials
     [pressed, firstPress] = KbQueueCheck(kbPointer);
     if firstPress(KbName('ESCAPE')); break; end
         
-    if ~bias
+    if ~bias && ~single
         Shuffle(firstensemble);
         Shuffle(secondensemble);
         
@@ -171,7 +166,7 @@ for trail = 1:numTrials
         
         WaitSecs(trialTime);
         Screen('Flip', window);
-    else
+    elseif bias && ~single
         Shuffle(firstensemble)
         Shuffle(secondensemble)
         
@@ -198,24 +193,24 @@ for trail = 1:numTrials
 
 
 
-    %Screen('DrawLines', window, allCoords, lineWidthPix, white, [xCenter yCenter]); % Draw the fixation cross
+    Screen('DrawLines', window, [695 745 720 720; 450 450 425 475], 5, 0); % Draw the fixation cross
     Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
     Screen('DrawTexture', window, imagesToShowThisTrial(2), [], [xCenter+128, yCenter-128 xCenter+384 yCenter+128]);
 
-    DrawFormattedText(window, ['Click on the image that you think is more ' trait], xCenter-150, yCenter+250);
+    DrawFormattedText(window, ['Click on the image that you think is more ' trait '.'], xCenter-250, yCenter+250);
 
     Screen('Flip', window);
 
     [x,y,clicks] = GetMouse(window);
     while true
-        if any(clicks) && (((x > xCenter-640 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 640)) && (y > yCenter - 256 && y < yCenter + 256))
+        if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 256 && y < yCenter + 256))
             break
         end
         [x,y,clicks] = GetMouse(window);
     end
     data{trail} = [[x y] noiseOrAntiNoise];
 
-    DrawFormattedText(window, 'Press any key to continue');
+    DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
     Screen('Flip', window);
 
     KbWait();
