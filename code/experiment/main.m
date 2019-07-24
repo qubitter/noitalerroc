@@ -194,9 +194,10 @@ for trail = 1:numTrials
         
         temp = GetSecs();
         
-        textlist = zeros([6 1]);
-        textlist = [Screen('MakeTexture', window, imread([firstdir(1).folder '/' firstdir(1).name])) Screen('MakeTexture', window, imread([firstdir(2).folder '/' firstdir(2).name])) Screen('MakeTexture', window, imread([firstdir(3).folder '/' firstdir(3).name])) Screen('MakeTexture', window, imread([secondir(1).folder '/' secondir(1).name])) Screen('MakeTexture', window, imread([secondir(2).folder '/' secondir(2).name])) Screen('MakeTexture', window, imread([secondir(3).folder '/' secondir(3).name]))];
+        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [secondir(1).folder '/' secondir(1).name] [secondir(2).folder '/' secondir(2).name] [secondir(3).folder '/' secondir(3).name]};
         Shuffle(textlist);
+        
+        datawrite = textlist;
         
         temp = GetSecs()-temp;
         
@@ -216,9 +217,10 @@ for trail = 1:numTrials
         
         temp = GetSecs();
         
-        textlist = zeros([6 1]);
-        textlist = [Screen('MakeTexture', window, imread([firstdir(1).folder '/' firstdir(1).name])) Screen('MakeTexture', window, imread([firstdir(2).folder '/' firstdir(2).name])) Screen('MakeTexture', window, imread([firstdir(3).folder '/' firstdir(3).name])) Screen('MakeTexture', window, imread([firstdir(4).folder '/' firstdir(4).name])) Screen('MakeTexture', window, imread([firstdir(5).folder '/' firstdir(5).name])) Screen('MakeTexture', window, imread([secondir(1).folder '/' secondir(1).name]))];
+        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [firstdir(4).folder '/' firstdir(4).name] [firstdir(5).folder '/' firstdir(5).name] [secondir(1).folder '/' secondir(1).name]};
         Shuffle(textlist);
+        
+        datawrite = textlist;
         
         temp = GetSecs()-temp;
         
@@ -275,7 +277,7 @@ for trail = 1:numTrials
     data{trail+2} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
     
     if ensemble
-        data{trail+2} = {data{trail+2} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
+        data{trail+2} = {data{trail+2} datawrite};
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
@@ -291,6 +293,8 @@ end
 DrawFormattedText(window, 'You have reached the end of the experiment. Thank you for working with us. ', 'center', 'center');
 Screen('Flip', window);
 KbWait();
+
+writecell(data, ['response_' name]);
 
 Screen('Close');
 Screen('CloseAll');
