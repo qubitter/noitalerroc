@@ -262,7 +262,7 @@ for trail = 1:numTrials
     data{trail} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
     
     if ensemble
-        data{trail} = {data{trail} mat2cell(textlist)};
+        data{trail} = {data{trail} "Some ensemble images or smth idk" }; % the iti-usage branch has a working copy of this
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
