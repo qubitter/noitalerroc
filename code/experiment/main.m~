@@ -200,7 +200,7 @@ for trail = 1:numTrials
         
         temp = GetSecs()-temp;
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        WaitSecs(1.5-temp);
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -222,7 +222,7 @@ for trail = 1:numTrials
         
         temp = GetSecs()-temp;
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - 
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
