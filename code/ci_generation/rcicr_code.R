@@ -22,17 +22,30 @@
 library(rcicr)
 
 # Base image name used during stimulus generation
+# NOTE: retrieve base image name from 
 baseimage <- 'base'
 
 # File containing the contrast parameters (this file was created during stimulus generation)
-# CHANGE 'workspace_data.Rdata' TO WHATEVER IS APPROPRIATE
-rdata <- 'workspace_data.Rdata'
+rdata <- 'rcic_seed_1_time_Jul_22_2019_13_57.Rdata'
 
 # Load response data
-# CHANGE 'reponses.csv' TO WHATEVER IS APPROPRIATE
+# NOTE: 'responses.csv' is used for general code; use appropriate names for each subject; see below
 responsedata <- read.csv('responses.csv')
 
-# Batch generate classification images by trait
-cis <- batchGenerateCI2IFC(responsedata, 'trait', 'stimulus', 'response', baseimage, rdata)
+# change code as it is warranted
+stimulus <- responsedata$stimulus
+response <- responsedata$response
 
+# Batch generate classification images by trait
+cis <- generateCI(stimulus, response, baseimage, rdata)
+# NOTES: change 'responsedata' as appropriate
+ cis <- batchGenerateCI2IFC(responsedata, 'trait', 'stimulus', 'response', baseimage, rdata)
+
+# NOTE: num_subjects not defined yet
+# NOTE: using the for loop assumes subjects are numbered 1 through however-many subjects there are;
+#       if ID numbers are used, the code should be changed as approriate
+# for (i in 1:num_subjects){
+#   responsedata_i <- read.csv(paste('responses', '_', i,'.csv', sep = ""));
+#   ci_i <- batchGenerateCI2IFC(responsedata_i, 'trait', 'stimulus', 'response', baseimage, rdata)
+# }
 
