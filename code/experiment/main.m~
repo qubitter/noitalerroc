@@ -200,7 +200,7 @@ for trail = 1:numTrials
         
         temp = GetSecs()-temp;
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        WaitSecs(1.5-temp);
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -222,7 +222,7 @@ for trail = 1:numTrials
         
         temp = GetSecs()-temp;
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - 
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -272,10 +272,10 @@ for trail = 1:numTrials
     end
     if breakout; break; end
     
-    data{trail+2} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    data{trail} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
     
     if ensemble
-        data{trail+2} = {data{trail+2} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
+        data{trail} = {data{trail} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
