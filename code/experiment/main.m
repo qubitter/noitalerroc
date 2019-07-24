@@ -15,8 +15,11 @@ kbPointer = keyboardIndices(end);
 exp = input('Please enter the experiment code. ', 's');
 
 %% Code is processed as follows:
+
+%  123456
+
 %  First digit: 
-%      single (0), unbiased ensemble (1), or biased ensemble (2)
+%     single (0), unbiased ensemble (1), or biased ensemble (2)
 %  Second digit:
 %      Tens of trials in hex
 %  Third digit: 
@@ -35,6 +38,26 @@ exp = input('Please enter the experiment code. ', 's');
 %      if single, 0 (can be used for testing purposes)
 %      if ensemble, then second race && gender - Asian m (0), Black m (1), Latino m
 %      (2), White m (3) - female is male + 4
+
+%% Data is stored as follows:
+
+%  First row is subject data - {Name, Age, Handedness}
+%  Second row is testing data - {kindOfTrial, numTrials, trait, trialTime, firstRG,
+%  secondRG}
+%  Following rows are testing data - {a, b, c, d}
+
+%  a:
+%     Which image was chosen - 1 for left, 0 for right
+%  b: 
+%     Whether the chosen image was noise or anti-noise - 1 for noise, 0 for
+%     anti-noise
+%  c: 
+%     Which image was used - ID number
+%  d:
+%     [topLeftImageName topMidImageName topRightImageName;
+%     bottomLeftImageName bottomMidImageName bottomRightImageName]
+%     (ensemble only)
+
 %% Setup
 
 name = input('Please enter your name. ', 's');
@@ -73,7 +96,7 @@ Screen('TextFont', window, 'Arial');
 
 %% Control Logic
 
-[single, ensemble, bias, firstRaceGender, secondRaceGender, trialTime, numTrials, trait, expString] = deal(NaN);
+[kindOfTrial, single, ensemble, bias, firstRaceGender, secondRaceGender, trialTime, numTrials, trait, expString] = deal(NaN);
 
 personcodes = ['AM'; 'BM'; 'LM'; 'WM'; 'AF'; 'BF'; 'LF'; 'WF'];
 traits = {'attractive', 'punctual', 'afraid', 'angry', 'disgusted', 'dominant', 'feminine', 'happy', 'masculine', 'sad', 'surprised', 'threatening', 'trustworthy', 'unusual', 'babyfaced', 'educated'};
@@ -82,9 +105,9 @@ traits = {'attractive', 'punctual', 'afraid', 'angry', 'disgusted', 'dominant', 
 if (str2double(exp(1)) == 0); single = true; else; single = false; end
 ensemble = ~single;
 
-if (ensemble); if (str2double(exp(1)) == 1); bias = false; elseif (str2double(exp(1)) == 2); bias = true; else; bias = false; end; else; bias = false; end
+if (ensemble); if (str2double(exp(1)) == 1); bias = false; kindOfTrial = 'unbiased ensemble'; elseif (str2double(exp(1)) == 2); bias = true; kindOfTrial = 'biased ensemble'; else; bias = false; end; else; bias = false; end
 
-if (ensemble); expString = 'sets of 6 images, each of which will be followed by a pair of'; else; expString = 'pairs of'; end
+if (ensemble); expString = 'sets of 6 images, each of which will be followed by a pair of'; else; expString = 'pairs of'; kindOfTrial = 'single'; end
 
 % Race and Gender
 
@@ -103,7 +126,9 @@ trait = traits{hex2dec(exp(3))+1};
 
 %% Create stimulus list
 
-data = cell([numTrials 1]);
+data = cell([numTrials+2 1]);
+data{1} = {name age hand};
+data{2} = {kindOfTrial num2str(numTrials) trait [num2str(trialTime) 'ms'] firstRaceGender secondRaceGender};
 
 stimuliorder = randperm(300);
 stimuli = zeros([1200 1]);
@@ -159,7 +184,7 @@ for trail = 1:numTrials
     if firstPress(KbName('ESCAPE')); break; end
     
     if mod(trail, 50) == 0
-        DrawFormattedText(window, ["You've reached " num2str(trail) " trials. Please feel free to take a break. Press any key to continue when you're ready."], 'center', 'center', 0, 50);
+        DrawFormattedText(window, ['You''ve reached ' num2str(trail) ' trials. Please feel free to take a break. Press any key to continue when you''re ready.'], 'center', 'center', 0, 50);
         Screen('Flip', window);
     end
         
@@ -169,6 +194,7 @@ for trail = 1:numTrials
         
         textlist = zeros([6 1]);
         textlist = [firstensemble(1:3) secondensemble(1:3)];
+        Shuffle(textlist);
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -184,7 +210,7 @@ for trail = 1:numTrials
         
         textlist = zeros([6 1]);
         textlist = [firstensemble(1:5) secondensemble(1)];
-        Shuffle(textlist)
+        Shuffle(textlist);
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -233,7 +259,11 @@ for trail = 1:numTrials
     end
     if breakout; break; end
     
-    data{trail} = [[x y] noiseOrAntiNoise];
+    data{trail} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    
+    if ensemble
+        data{trail} = {data{trail} mat2cell(textlist)};
+    end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
     Screen('Flip', window);
