@@ -272,10 +272,10 @@ for trail = 1:numTrials
     end
     if breakout; break; end
     
-    data{trail} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    data{trail+2} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
     
     if ensemble
-        data{trail} = {data{trail} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
+        data{trail+2} = {data{trail+2} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
