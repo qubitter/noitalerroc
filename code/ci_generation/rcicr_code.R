@@ -32,9 +32,6 @@ rdata <- 'workspace_data.Rdata'
 # CHANGE 'reponses.csv' TO WHATEVER IS APPROPRIATE
 responsedata <- read.csv('responses.csv')
 
-# Batch generate classification images by subject
-cis <- batchGenerateCI2IFC(responsedata, 'subject', 'stimulus', 'response', baseimage, rdata)
-
 # Batch generate classification images by trait
 cis <- batchGenerateCI2IFC(responsedata, 'trait', 'stimulus', 'response', baseimage, rdata)
 
