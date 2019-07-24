@@ -1,8 +1,12 @@
 %% Begin
 clear all;
 close all;
-KbName('UnifyKeyNames');
+
 rng('Shuffle')
+breakout = false;
+
+KbName('UnifyKeyNames');
+escape = KbName('ESCAPE');
 
 [keyboardIndices, productNames, allInfos] = GetKeyboardIndices();
 kbPointer = keyboardIndices(end);
@@ -115,7 +119,7 @@ for stimNum = stimuliorder
        stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
        stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
        stimloader = stimloader + 1;
-       DrawFormattedText(window, ['Loading Stimuli... ' num2str(round((stimloader/6.0))) '%'], 'center', 'center');
+       DrawFormattedText(window, ['Loading Stimuli... ' num2str(round((stimloader/3.0))) '%'], 'center', 'center');
        Screen('Flip', window);
 end
 
@@ -153,6 +157,11 @@ KbQueueStart(kbPointer);
 for trail = 1:numTrials
     [pressed, firstPress] = KbQueueCheck(kbPointer);
     if firstPress(KbName('ESCAPE')); break; end
+    
+    if mod(trail, 50) == 0
+        DrawFormattedText(window, ["You've reached " num2str(trail) " trials. Please feel free to take a break. Press any key to continue when you're ready."], 'center', 'center', 0, 50);
+        Screen('Flip', window);
+    end
         
     if ~bias && ~single
         Shuffle(firstensemble);
@@ -161,6 +170,9 @@ for trail = 1:numTrials
         textlist = zeros([6 1]);
         textlist = [firstensemble(1:3) secondensemble(1:3)];
         
+        [pressed, firstPress] = KbQueueCheck(kbPointer);
+        if firstPress(KbName('ESCAPE')); break; end
+    
         Screen('DrawTextures', window, textlist, [], xy_rect);
         Screen('Flip', window);
         
@@ -173,6 +185,9 @@ for trail = 1:numTrials
         textlist = zeros([6 1]);
         textlist = [firstensemble(1:5) secondensemble(1)];
         Shuffle(textlist)
+        
+        [pressed, firstPress] = KbQueueCheck(kbPointer);
+        if firstPress(KbName('ESCAPE')); break; end
         
         Screen('DrawTextures', window, textlist, [], xy_rect);
         Screen('Flip', window);
@@ -191,7 +206,8 @@ for trail = 1:numTrials
     if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; else; noiseOrAntiNoise(1) = false; end
     noiseOrAntiNoise(2) = ~noiseOrAntiNoise(1);
 
-
+    [pressed, firstPress] = KbQueueCheck(kbPointer);
+    if firstPress(KbName('ESCAPE')); break; end
 
     Screen('DrawLines', window, [695 745 720 720; 450 450 425 475], 5, 0); % Draw the fixation cross
     Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
@@ -200,14 +216,23 @@ for trail = 1:numTrials
     DrawFormattedText(window, ['Click on the image that you think is more ' trait '.'], xCenter-250, yCenter+250);
 
     Screen('Flip', window);
-
+    
+    [pressed, firstPress] = KbQueueCheck(kbPointer);
+    if firstPress(KbName('ESCAPE')); break; end
+    
     [x,y,clicks] = GetMouse(window);
     while true
         if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 256 && y < yCenter + 256))
             break
         end
+        
+        [pressed, firstPress] = KbQueueCheck(kbPointer);
+        if firstPress(KbName('ESCAPE')); breakout = true; break; end
+    
         [x,y,clicks] = GetMouse(window);
     end
+    if breakout; break; end
+    
     data{trail} = [[x y] noiseOrAntiNoise];
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
@@ -215,5 +240,13 @@ for trail = 1:numTrials
 
     KbWait();
         
+    [pressed, firstPress] = KbQueueCheck(kbPointer);
+    if firstPress(KbName('ESCAPE')); break; end
 end    
+
+DrawFormattedText(window, 'You have reached the end of the experiment. Thank you for working with us. ', 'center', 'center');
+Screen('Flip', window);
+KbWait();
+
 Screen('Close');
+Screen('CloseAll');
