@@ -18,7 +18,7 @@ exp = input('Please enter the experiment code. ', 's');
 %  First digit: 
 %      single (0), unbiased ensemble (1), or biased ensemble (2)
 %  Second digit:
-%      Fives of trials in hex
+%      Tens of trials in hex
 %  Third digit: 
 %      Trait - attractiveness (0), punctuality (1), afraid (2),
 %      angry (3), disgusted (4), dominant (5), feminine (6), happy (7),
@@ -93,13 +93,13 @@ firstPeople = [];
 SecondPeople = [];
 
 % Trial time
-if (ensemble); trialTime = (str2double(exp(3)).*10)/1000; end
+if (ensemble); trialTime = (str2double(exp(4)).*10)/1000; end
 
 % Number of trials
-numTrials = (hex2dec(exp(2))).*10;
+numTrials = (hex2dec(exp(2))).*20;
 
 % Trait
-trait = traits{hex2dec(exp(4))+1};
+trait = traits{hex2dec(exp(3))+1};
 
 %% Create stimulus list
 
@@ -213,7 +213,7 @@ for trail = 1:numTrials
     Screen('DrawTexture', window, imagesToShowThisTrial(1), [], [xCenter-384  yCenter-128 xCenter-128 yCenter+128]);
     Screen('DrawTexture', window, imagesToShowThisTrial(2), [], [xCenter+128, yCenter-128 xCenter+384 yCenter+128]);
 
-    DrawFormattedText(window, ['Click on the image that you think is more ' trait '.'], xCenter-250, yCenter+250);
+    DrawFormattedText(window, ['Click on the image that you think is more ' trait '.'], 'center' , yCenter+250);
 
     Screen('Flip', window);
     
