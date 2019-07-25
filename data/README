@@ -1,0 +1,5 @@
+Data in this directory will be stored in two files per trial. 
+
+One file will be the data itself, and the other will be the metadata - 
+
+data about the trial and experimenter information. 
