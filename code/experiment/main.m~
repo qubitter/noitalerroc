@@ -128,7 +128,7 @@ trait = traits{hex2dec(exp(3))+1};
 
 data = cell([numTrials+2 1]);
 data{1} = {name age hand};
-data{2} = {kindOfTrial num2str(numTrials) trait [num2str(trialTime) 'ms'] firstRaceGender secondRaceGender};
+data{2} = {kindOfTrial num2str(numTrials) trait [num2str(trialTime*100) 'ms'] firstRaceGender secondRaceGender};
 
 stimuliorder = randperm(300);
 stimuli = zeros([1200 1]);
@@ -194,9 +194,12 @@ for trail = 1:numTrials
         
         temp = GetSecs();
         
-        textlist = zeros([6 1]);
-        textlist = [firstdir(1).folder '/' firstdir(1).name][firstdir(2).folder '/' firstdir(2).name])) Screen('MakeTexture', window, imread([firstdir(3).folder '/' firstdir(3).name])) Screen('MakeTexture', window, imread([secondir(1).folder '/' secondir(1).name])) Screen('MakeTexture', window, imread([secondir(2).folder '/' secondir(2).name])) Screen('MakeTexture', window, imread([secondir(3).folder '/' secondir(3).name]))];
+        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [secondir(1).folder '/' secondir(1).name] [secondir(2).folder '/' secondir(2).name] [secondir(3).folder '/' secondir(3).name]};
         Shuffle(textlist);
+        
+        datawrite = textlist;
+        
+        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
         
         temp = GetSecs()-temp;
         
@@ -216,10 +219,13 @@ for trail = 1:numTrials
         
         temp = GetSecs();
         
-        textlist = zeros([6 1]);
-        textlist = [Screen('MakeTexture', window, imread([firstdir(1).folder '/' firstdir(1).name])) Screen('MakeTexture', window, imread([firstdir(2).folder '/' firstdir(2).name])) Screen('MakeTexture', window, imread([firstdir(3).folder '/' firstdir(3).name])) Screen('MakeTexture', window, imread([firstdir(4).folder '/' firstdir(4).name])) Screen('MakeTexture', window, imread([firstdir(5).folder '/' firstdir(5).name])) Screen('MakeTexture', window, imread([secondir(1).folder '/' secondir(1).name]))];
+        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [firstdir(4).folder '/' firstdir(4).name] [firstdir(5).folder '/' firstdir(5).name] [secondir(1).folder '/' secondir(1).name]};
         Shuffle(textlist);
         
+        datawrite = textlist;
+        
+        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
+
         temp = GetSecs()-temp;
         
         WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
@@ -261,7 +267,7 @@ for trail = 1:numTrials
     
     [x,y,clicks] = GetMouse(window);
     while true
-        if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 256 && y < yCenter + 256))
+        if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 128 && y < yCenter + 128))
             break
         end
         
@@ -275,7 +281,9 @@ for trail = 1:numTrials
     data{trail+2} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
     
     if ensemble
-        data{trail+2} = {data{trail+2} {textlist(1) textlist(2) textlist(3); textlist(4) textlist(5) textlist(6)}};
+        for i = 1:6
+            data{trail+2}(i+3) = datawrite(i);
+        end
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
@@ -292,5 +300,8 @@ DrawFormattedText(window, 'You have reached the end of the experiment. Thank you
 Screen('Flip', window);
 KbWait();
 
+writecell(data, ['response_' name]);
+
 Screen('Close');
 Screen('CloseAll');
+

@@ -64,6 +64,8 @@ name = input('Please enter your name. ', 's');
 age = input('Please enter your age. ', 's');
 hand = input('Please enter your handedness - L for left-handed, R for right-handed. ', 's');
 
+personalData = {name age hand};
+
 Screen('Preference', 'SkipSyncTests', 1);
 
 [window, rect] = Screen('OpenWindow', 0, []);
@@ -124,11 +126,23 @@ numTrials = (hex2dec(exp(2))).*20;
 % Trait
 trait = traits{hex2dec(exp(3))+1};
 
+trialData = {kindOfTrial num2str(numTrials) trait [num2str(trialTime*1000) 'ms'] firstRaceGender secondRaceGender};
+
 %% Create stimulus list
 
-data = cell([numTrials+2 1]);
-data{1} = {name age hand};
-data{2} = {kindOfTrial num2str(numTrials) trait [num2str(trialTime) 'ms'] firstRaceGender secondRaceGender};
+if ensemble
+    data = cell([numTrials+2 9]);
+else
+    data = cell([numTrials+2 6]);
+end
+
+for i = 1:3
+    data{1,i} = personalData{i};
+end
+
+for i = 1:6
+    data{2,i} = trialData{i};
+end
 
 stimuliorder = randperm(300);
 stimuli = zeros([1200 1]);
@@ -199,6 +213,8 @@ for trail = 1:numTrials
         
         datawrite = textlist;
         
+        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
+        
         temp = GetSecs()-temp;
         
         WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
@@ -222,6 +238,8 @@ for trail = 1:numTrials
         
         datawrite = textlist;
         
+        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
+
         temp = GetSecs()-temp;
         
         WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
@@ -263,7 +281,7 @@ for trail = 1:numTrials
     
     [x,y,clicks] = GetMouse(window);
     while true
-        if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 256 && y < yCenter + 256))
+        if any(clicks) && (((x > xCenter-384 && x < xCenter-128) || (x > xCenter + 128 && x < xCenter + 384)) && (y > yCenter - 128 && y < yCenter + 128))
             break
         end
         
@@ -274,10 +292,16 @@ for trail = 1:numTrials
     end
     if breakout; break; end
     
-    data{trail+2} = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    trailData = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    
+    for i = 1:3
+        data{trail+2, i} = trailData{i};
+    end
     
     if ensemble
-        data{trail+2} = {data{trail+2} datawrite};
+        for i = 1:6
+            data{trail+2, i+3} = datawrite(i);
+        end
     end    
 
     DrawFormattedText(window, 'Press any key to continue.', 'center', 'center');
@@ -294,7 +318,8 @@ DrawFormattedText(window, 'You have reached the end of the experiment. Thank you
 Screen('Flip', window);
 KbWait();
 
-writecell(data, ['response_' name]);
+writecell(data, ['../../data/response_' name '.xlsx']);
 
 Screen('Close');
 Screen('CloseAll');
+
