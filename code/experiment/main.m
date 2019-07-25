@@ -126,23 +126,33 @@ numTrials = (hex2dec(exp(2))).*20;
 % Trait
 trait = traits{hex2dec(exp(3))+1};
 
-trialData = {kindOfTrial num2str(numTrials) trait [num2str(trialTime*1000) 'ms'] firstRaceGender secondRaceGender};
+if single; trialData = {kindOfTrial num2str(numTrials) trait}; else;  trialData = {kindOfTrial num2str(numTrials) trait [num2str(trialTime*1000) 'ms'] firstRaceGender secondRaceGender};end
 
 %% Create stimulus list
 
 if ensemble
-    data = cell([numTrials+2 9]);
+    data = cell([numTrials 9]);
+    metadata = cell([1 9]);
 else
-    data = cell([numTrials+2 6]);
+    data = cell([numTrials 3]);
+    metadata = cell([1 6]);
 end
 
 for i = 1:3
-    data{1,i} = personalData{i};
+    metadata{1,i} = personalData{i};
 end
 
-for i = 1:6
-    data{2,i} = trialData{i};
+if single
+    for i = 4:6
+        metadata{1,i} = trialData{i-3};
+    end
+elseif ensemble
+    for i = 4:9
+        metadata{1, i} = trialData{i-3};
+    end
 end
+
+%% Load Stimuli
 
 stimuliorder = randperm(300);
 stimuli = zeros([1200 1]);
@@ -166,21 +176,7 @@ end
 if (~single)
     firstdir = dir(['../../stimuli/cfd/img/' firstRaceGender '-*/*.jpg']);
     secondir = dir(['../../stimuli/cfd/img/' secondRaceGender '-*/*.jpg']);
-    %for fileNum = 1:length(firstdir)
-        %firstensemble = [firstensemble Screen('MakeTexture', window, imread([firstdir(fileNum).folder '/' firstdir(fileNum).name]))];
-        %DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(round(100*(fileNum/(length(firstdir)+length(secondir))))) '%'], 'center', 'center');
-        %Screen('Flip', window);
-    %end
-    %for fileNum = 1:length(secondir)
-        %secondensemble = [secondensemble Screen('MakeTexture', window, imread([secondir(fileNum).folder '/' secondir(fileNum).name]))];
-        %DrawFormattedText(window, ['Loading Ensemble Stimuli...' num2str(round(100*((fileNum+length(firstdir))/(length(firstdir)+length(secondir))))) '%'], 'center', 'center');
-        %Screen('Flip', window);
-    %end
 end
-
-% Shuffle ensemble stimuli
-%firstensemble = firstensemble(randperm(length(firstensemble)));
-%secondensemble = secondensemble(randperm(length(secondensemble)));
 
 %% Introduction
 
@@ -201,23 +197,29 @@ for trail = 1:numTrials
         DrawFormattedText(window, ['You''ve reached ' num2str(trail) ' trials. Please feel free to take a break. Press any key to continue when you''re ready.'], 'center', 'center', 0, 50);
         Screen('Flip', window);
     end
+    
+    % Show ensemble images, if necessary
         
     if ~bias && ~single
-        Shuffle(firstdir);
-        Shuffle(secondir);
+        firstdir = Shuffle(firstdir);
+        secondir = Shuffle(secondir);
         
-        temp = GetSecs();
+        timer = GetSecs();
         
-        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [secondir(1).folder '/' secondir(1).name] [secondir(2).folder '/' secondir(2).name] [secondir(3).folder '/' secondir(3).name]};
-        Shuffle(textlist);
+        textlist = Shuffle({[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [secondir(1).folder '/' secondir(1).name] [secondir(2).folder '/' secondir(2).name] [secondir(3).folder '/' secondir(3).name]});
         
-        datawrite = textlist;
+        datawrite = cell([1 6]);
         
-        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
+        for i = 1:6
+            temp = strsplit(textlist{i}, '/');
+            temp = temp{end};
+            datawrite{i} = temp;
+        end    
         
-        temp = GetSecs()-temp;
+        textlist = Shuffle([Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))]);
+        timer = GetSecs()-timer;
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        WaitSecs(1.5-timer); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -228,21 +230,26 @@ for trail = 1:numTrials
         WaitSecs(trialTime);
         Screen('Flip', window);
     elseif bias && ~single
-        Shuffle(firstdir)
-        Shuffle(secondir)
+        firstdir = Shuffle(firstdir);
+        secondit = Shuffle(secondir);
         
-        temp = GetSecs();
+        timer = GetSecs();
         
-        textlist = {[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [firstdir(4).folder '/' firstdir(4).name] [firstdir(5).folder '/' firstdir(5).name] [secondir(1).folder '/' secondir(1).name]};
-        Shuffle(textlist);
+        textlist = Shuffle({[firstdir(1).folder '/' firstdir(1).name] [firstdir(2).folder '/' firstdir(2).name] [firstdir(3).folder '/' firstdir(3).name] [firstdir(4).folder '/' firstdir(4).name] [firstdir(5).folder '/' firstdir(5).name] [secondir(1).folder '/' secondir(1).name]});
         
-        datawrite = textlist;
+        datawrite = cell([1 6]);
         
-        textlist = [Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))];
-
-        temp = GetSecs()-temp;
+        for i = 1:6
+            temp = strsplit(textlist{i}, '/');
+            temp = temp{end};
+            datawrite{i} = temp;
+        end  
         
-        WaitSecs(1.5-temp); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
+        textlist = Shuffle([Screen('MakeTexture', window, imread(textlist{1})) Screen('MakeTexture', window, imread(textlist{2})) Screen('MakeTexture', window, imread(textlist{3})) Screen('MakeTexture', window, imread(textlist{4})) Screen('MakeTexture', window, imread(textlist{5})) Screen('MakeTexture', window, imread(textlist{6}))]);
+        
+        timer = GetSecs()-timer;
+        
+        WaitSecs(1.5-timer); % ITI is roughly between 0.9 and 1.1 seconds - WaitSecs is used to normalize to 1.5 seconds
         
         [pressed, firstPress] = KbQueueCheck(kbPointer);
         if firstPress(KbName('ESCAPE')); break; end
@@ -262,7 +269,7 @@ for trail = 1:numTrials
     noiseOrAntiNoise = [0 0]; % true if noise, false if antinoise
 
     imagesToShowThisTrial = imagesToShowThisTrial(randperm(2));
-    if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; else; noiseOrAntiNoise(1) = false; end
+    if listToCheckNoiseOrAntiNoise(1) == imagesToShowThisTrial(1); noiseOrAntiNoise(1) = true; end
     noiseOrAntiNoise(2) = ~noiseOrAntiNoise(1);
 
     [pressed, firstPress] = KbQueueCheck(kbPointer);
@@ -292,15 +299,18 @@ for trail = 1:numTrials
     end
     if breakout; break; end
     
-    trailData = {(x > xCenter-384 && x < xCenter-128) noiseOrAntiNoise(1) stimuliorder(trail)};
+    noiser = noiseOrAntiNoise(~(x > xCenter-384 && x < xCenter-128) + 1);
+    if noiser == 0; noiser = -1; end
+    
+    trailData = {(x > xCenter-384 && x < xCenter-128) noiser stimuliorder(trail)};
     
     for i = 1:3
-        data{trail+2, i} = trailData{i};
+        data{trail, i} = trailData{i};
     end
     
     if ensemble
         for i = 1:6
-            data{trail+2, i+3} = datawrite(i);
+            data{trail, i+3} = datawrite{i};
         end
     end    
 
@@ -308,18 +318,33 @@ for trail = 1:numTrials
     Screen('Flip', window);
 
     KbWait();
+    Screen('Flip', window);
         
     [pressed, firstPress] = KbQueueCheck(kbPointer);
     if firstPress(KbName('ESCAPE')); break; end
     
 end    
 
+%% Store Data
+
 DrawFormattedText(window, 'You have reached the end of the experiment. Thank you for working with us. ', 'center', 'center');
 Screen('Flip', window);
 KbWait();
 
-writecell(data, ['../../data/response_' name '.xlsx']);
+data = cell2table(data);
+metadata = cell2table(metadata);
+
+if single
+    data.Properties.VariableNames = {'Side', 'Noise', 'Image'};
+    metadata.Properties.VariableNames = {'Name', 'Age', 'Handedness', 'KindOfTrials', 'NumberOfTrials', 'Trait'};
+elseif ensemble
+    data.Properties.VariableNames = {'Side', 'Noise', 'Image', 'TopLeft', 'TopMid', 'TopRight', 'BottomLeft', 'BottomMid', 'BottomRight'};
+    metadata.Properties.VariableNames = {'Name', 'Age', 'Handedness', 'KindOfTrials', 'NumberOfTrials', 'Trait', 'TrialTime', 'firstRaceGender', 'secondRaceGender'};
+
+end 
+
+writetable(data, ['../../data/response_' name num2str(age) hand '.csv']);
+writetable(metadata, ['../../data/response_' name num2str(age) hand '_meta.csv']);
 
 Screen('Close');
 Screen('CloseAll');
-
