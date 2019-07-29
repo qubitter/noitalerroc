@@ -329,7 +329,7 @@ end
 
 DrawFormattedText(window, 'You have reached the end of the experiment. Thank you for working with us. ', 'center', 'center');
 Screen('Flip', window);
-KbWait();
+KbWait();`
 
 data = cell2table(data);
 metadata = cell2table(metadata);
@@ -343,8 +343,8 @@ elseif ensemble
 
 end 
 
-writetable(data, ['../../data/response_' name num2str(age) hand '.csv']);
-writetable(metadata, ['../../data/response_' name num2str(age) hand '_meta.csv']);
+writetable(data, ['../../data/response_' name num2str(age) hand num2str(exp) '.csv']);
+writetable(metadata, ['../../data/response_' name num2str(age) hand num2str(exp) '_meta.csv']);
 
 Screen('Close');
 Screen('CloseAll');
