@@ -1,0 +1,2 @@
+Name,Age,Handedness,KindOfTrials,NumberOfTrials,Trait,TrialTime,firstRaceGender,secondRaceGender
+Gordon Wong,30,R,biased ensemble,300,trustworthy,90ms,BM,WM

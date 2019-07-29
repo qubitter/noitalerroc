@@ -1,0 +1,2 @@
+Name,Age,Handedness,KindOfTrials,NumberOfTrials,Trait,TrialTime,firstRaceGender,secondRaceGender
+QIU Shi,23,R,biased ensemble,300,trustworthy,90ms,BM,WM
