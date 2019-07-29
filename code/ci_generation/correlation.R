@@ -9,3 +9,16 @@ generateStimuli2IFC(base_face_files=list('im' = 'MNES.jpg'),n_trials=300, img_si
 citation('rcicr')
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
