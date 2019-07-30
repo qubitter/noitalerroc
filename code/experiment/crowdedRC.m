@@ -31,19 +31,7 @@ window_w = rect(3); % defining size of screen
 window_h = rect(4);
 x_Center = window_w * .75;
 y_Center = window_h/2;
-Mask_Plain = imread('mask.png');
-cd ..
-cd ..
-cd('stimuli')
-cd('cfd')
-cd('AKDEF')
 fhas = imread('FHAS.png');
-cd .. 
-cd .. 
-cd ..
-cd('code')
-cd('experiment')
-Mask_Plain = 255-Mask_Plain(:,:,1); %use first layer % added
 for f = 1:292
     for i = 1:215
         if fhas(f,i) == 0
