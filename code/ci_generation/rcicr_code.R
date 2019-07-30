@@ -26,3 +26,5 @@ response <- responsedata$Noise
 # Batch generate classification images by trait
 # ci <- generateCI2IFC(stimulus, response, baseimage, rdata)
 ci <- generateCI(stimulus, response, baseimage, rdata)
+# ci <- generateCI(stimulus, response, baseimage, rdata, zmap = TRUE, zmapmethod = “t.test”)
+
