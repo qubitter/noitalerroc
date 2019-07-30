@@ -45,7 +45,7 @@ for i = 1:num_pts
     %tmp_bmp(:,:,4) = Mask_Plain;
     tid(i) = Screen('MakeTexture', window, flip(tmp_bmp));
     Screen('DrawText', window, 'Loading...', window_w/2, y_Center-25); % Write text to confirm loading of images
-    Screen('DrawText', window, [int2str(int16(i*100/num_pts)) '%'], x_Center, y_Center+25); % Write text to confirm percentage complete
+    Screen('DrawText', window, [int2str(int16(i*100/num_pts)) '%'], window_w/2, y_Center); % Write text to confirm percentage complete
     Screen('Flip', window); % Display text
 end
 
