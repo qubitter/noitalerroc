@@ -196,6 +196,8 @@ for trail = 1:numTrials
     if mod(trail, 50) == 0
         DrawFormattedText(window, ['You''ve reached ' num2str(trail) ' trials. Please feel free to take a break. Press any key to continue when you''re ready.'], 'center', 'center', 0, 50);
         Screen('Flip', window);
+        WaitSecs(1);
+        KbWait();
     end
     
     % Show ensemble images, if necessary
@@ -329,7 +331,7 @@ end
 
 DrawFormattedText(window, 'You have reached the end of the experiment. Thank you for working with us. ', 'center', 'center');
 Screen('Flip', window);
-KbWait();`
+KbWait();
 
 data = cell2table(data);
 metadata = cell2table(metadata);
