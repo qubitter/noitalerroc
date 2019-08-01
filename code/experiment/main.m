@@ -165,8 +165,8 @@ stimloader = 0;
 for stimNum = stimuliorder
        tmp = [];
        if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
-       stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
-       stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
+       stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../data/noisy/stimuli/crowdedRC_im_1_00' tmp '_ori.jpg']));
+       stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../data/noisy/stimuli/crowdedRC_im_1_00' tmp '_inv.jpg']));
        stimloader = stimloader + 1;
        DrawFormattedText(window, ['Loading Stimuli... ' num2str(round((stimloader/3.0))) '%'], 'center', 'center');
        Screen('Flip', window);

@@ -31,11 +31,19 @@ window_w = rect(3); % defining size of screen
 window_h = rect(4);
 x_Center = window_w * .75;
 y_Center = window_h/2;
-fhas = imread('FHAS.png');
-for f = 1:292
-    for i = 1:215
+fhas = imread('morph.png');
+v = imread('fhas.png');
+for f = 1:295
+    for i = 1:207
         if fhas(f,i) == 0
             fhas(f,i) = 255;
+        end
+    end
+end
+for f = 1:292
+    for i = 1:215
+        if v(f,i) == 0
+            v(f,i) = 255;
         end
     end
 end
@@ -104,8 +112,8 @@ stimloader = 0;
 for stimNum = stimuliorder
        tmp = [];
        if (floor(stimNum/100) ~= 0); tmp = num2str(stimNum); elseif (floor(stimNum/10) ~= 0); tmp = ['0' num2str(stimNum)]; else; tmp = ['00' num2str(stimNum)]; end
-       stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_ori.jpg']));
-       stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../stimuli/noisy/rcic_im_1_00' tmp '_inv.jpg']));
+       stimuli((2.*stimNum)-1) = Screen('MakeTexture', window, imread(['../../data/noisy/stimuli/crowdedRC_im_1_00' tmp '_ori.jpg']));
+       stimuli(2.*stimNum) = Screen('MakeTexture', window, imread(['../../data/noisy/stimuli/crowdedRC_im_1_00' tmp '_inv.jpg']));
        stimloader = stimloader + 1;
        DrawFormattedText(window, ['Loading Stimuli... ' num2str(round((stimloader/3.0))) '%'], 'center', 'center');
        Screen('Flip', window);
@@ -132,7 +140,7 @@ for trail = 1:numTrials
     end
     
     % Show ensemble images, if necessary
-    q = Screen('MakeTexture', window, imresize(fhas, .75));
+    q = Screen('MakeTexture', window, imresize(v, .75));
     Screen('DrawLines', window, [695 - 400 745 - 400 720 - 400 720 - 400; 450 450 425 475], 5, 0); %fixation cross
     Screen('DrawTexture', window, q, [], [x_Center - (162/2) y_Center - (219/2) x_Center + (162/2) y_Center + (219/2)]);
     Screen('DrawTextures', window, tid(faces), [], xy_circle); % display the faces
@@ -207,7 +215,7 @@ end
 data = cell2table(data);
 
 
-writetable(data, ['../../data/response_' + string(metadata(1)) + string(metadata(2)) + string(metadata(3)) + string(metadata(4)) + string(metadata(5)) +  '.csv']);
+writetable(data, '../../data/response_' + string(metadata(1)) + string(metadata(2)) + string(metadata(3)) + string(metadata(4)) + string(metadata(5)) +  '.csv');
 %writetable(metadata, ['../../data/response_' + string(metadata(1)) + string(metadata(2)) + string(metadata(3)) + string(metadata(4)) + string(metadata(5)) +  '_meta.csv']);
 
 Screen('Close');
