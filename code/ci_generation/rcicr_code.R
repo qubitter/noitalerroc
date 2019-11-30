@@ -13,18 +13,17 @@ baseimage <- 'im'
 rdata <- 'rcic_seed_1_time_Jul_22_2019_11_54.Rdata'
 
 # Load response data
-# NOTE: 'response_conan19r.csv' is used for one subject code; use appropriate names for each subject; see below
-responsedata <- read.csv('response_conan19r.csv')
+# NOTE: 'response_Linda19R.csv' is used for one subject code; use appropriate names for each subject
+responsedata <- read.csv('response_Linda19R_unbiased.csv')
 
-# change code as it is warranted
+# Labels based on how data was stored in CSV files
 stimulus <- responsedata$Image
-# Use this line when generating noise CI
 response <- responsedata$Noise
-# Use this line when generating anti-noise CI
-# response <- responsedata$Anti 
 
 # Batch generate classification images by trait
-# ci <- generateCI2IFC(stimulus, response, baseimage, rdata)
-ci <- generateCI(stimulus, response, baseimage, rdata)
-# ci <- generateCI(stimulus, response, baseimage, rdata, zmap = TRUE, zmapmethod = “t.test”)
-# infoVal <- computeInfoVal2IFC(ci, rdata)
+# To generate anti-noise CI, set antiCI = T
+# To generate a z-map, set zmap = T
+ci <- generateCI(stimulus, response, baseimage, rdata, antiCI = F, zmap = F)
+
+# infoVal calculation
+# infoVal <- computeInfoVal2IFC(ci, rdata, iter = 5)
